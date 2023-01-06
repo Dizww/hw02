@@ -1,24 +1,27 @@
 /* 基于智能指针实现双向链表 */
 #include <cstdio>
 #include <memory>
+#include <iostream>
 
-struct Node {
+template <typename T>
+class Node {
+public:
     // 这两个指针会造成什么问题？请修复
     std::unique_ptr<Node> next;
     Node*                 prev;
     // 如果能改成 unique_ptr 就更好了!
 
-    int value;
+    T value;
 
     // 这个构造函数有什么可以改进的？
-    Node(int val):
+    Node(T val):
         next(nullptr),
         prev(nullptr),
         value(val)
     {
     }
 
-    void insert(int val) {
+    void insert(T val) {
         auto node = std::make_unique<Node>(val);
                                         
         if(this->next != nullptr){
@@ -45,7 +48,11 @@ struct Node {
     }
 };
 
-struct List {
+template <typename T>
+class List {
+
+    using Node = Node<T>;
+public:
     std::unique_ptr<Node> head;
 
     List() = default;
@@ -75,17 +82,17 @@ struct List {
     List(List &&) = default;
     List &operator=(List &&) = default;
 
-    Node *front() const {
+    Node* front() const {
         return head.get();
     }
 
-    int pop_front() {
+    T pop_front() {
         int ret = head->value;
         head = std::move(head->next);
         return ret;
     }
 
-    void push_front(int value) {
+    void push_front(T value) {
         auto node = std::make_unique<Node>(value);
         node->next = std::move(head);
         if (head)
@@ -93,7 +100,7 @@ struct List {
         head = std::move(node);
     }
 
-    Node *at(size_t index) const {
+    Node* at(size_t index) const {
         auto curr = front();
         for (size_t i = 0; i < index; i++) {
             curr = curr->next.get();
@@ -102,16 +109,17 @@ struct List {
     }
 };
 
-void print(const List& lst) {  // 有什么值得改进的？
+template <typename T>
+void print(const List<T>& lst) {  // 有什么值得改进的？
     printf("[");
     for (auto curr = lst.front(); curr; curr = curr->next.get()) {
-        printf(" %d", curr->value);
+        std::cout << " " << curr->value;
     }
     printf(" ]\n");
 }
 
 int main() {
-    List a;
+    List<float> a;
 
     a.push_front(7);
     a.push_front(5);
